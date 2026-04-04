@@ -1,3 +1,5 @@
+/* Global styles (Tailwind is already configured here). */
+
 @import "tailwindcss";
 
 :root {
