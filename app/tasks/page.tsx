@@ -1,7 +1,6 @@
-'use client';
-
-import { useState } from 'react';
+import { getTasks, toggleTask, deleteTask } from '../actions';
 import TaskCard from '../components/TaskCard';
+import NewTaskModal from '../components/NewTaskModal';
 
 type Task = {
   id: number;
@@ -11,85 +10,73 @@ type Task = {
   priority: 'low' | 'medium' | 'high';
 };
 
-const initialTasks: Task[] = [
-  {
-    id: 1,
-    title: "Complete Next.js Day 3 tasks",
-    description: "Understand Server vs Client Components",
-    status: "todo",
-    priority: "high"
-  },
-  {
-    id: 2,
-    title: "Setup Drizzle ORM for database",
-    description: "Prepare PostgreSQL schema",
-    status: "in-progress",
-    priority: "medium"
-  },
-  {
-    id: 3,
-    title: "Design TaskFlow logo",
-    status: "done",
-    priority: "low"
-  },
-];
+interface TasksPageProps {
+  searchParams: { status?: string };
+}
 
-export default function TasksPage() {
-  const [tasks, setTasks] = useState(initialTasks);
+export default async function TasksPage({ searchParams }: TasksPageProps) {
+  const tasks = await getTasks();
+  const currentFilter = (searchParams.status as 'all' | 'todo' | 'done') || 'all';
 
-  const toggleComplete = (id: number) => {
-    setTasks(prev => prev.map(task => 
-      task.id === id 
-        ? { ...task, status: task.status === 'done' ? 'todo' : 'done' }
-        : task
-    ));
-  };
-
-  const deleteTask = (id: number) => {
-    setTasks(prev => prev.filter(task => task.id !== id));
-  };
-
-  const activeTasks = tasks.filter(t => t.status !== 'done');
-  const completedTasks = tasks.filter(t => t.status === 'done');
+  const filteredTasks = tasks.filter((task) => {
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'todo') return task.status !== 'done';
+    return task.status === 'done';
+  });
 
   return (
-    <div>
+    <div className="max-w-7xl mx-auto px-6 py-8">
       <div className="flex justify-between items-center mb-10">
         <h2 className="text-4xl font-semibold">All Tasks</h2>
-        <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-2xl text-sm font-medium">
-          + New Task
-        </button>
+        <NewTaskModal />
       </div>
 
-      <div className="space-y-8">
-        <div>
-          <h3 className="text-xl mb-6">To Do ({activeTasks.length})</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {activeTasks.map(task => (
-              <TaskCard 
-                key={task.id}
-                task={task}
-                onToggleComplete={toggleComplete}
-                onDelete={deleteTask}
-              />
-            ))}
-          </div>
-        </div>
+      {/* Filter Buttons */}
+      <div className="flex gap-3 mb-10">
+        <a
+          href="/tasks"
+          className={`px-6 py-2.5 rounded-2xl text-sm font-medium transition-all ${
+            currentFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400'
+          }`}
+        >
+          All
+        </a>
+        <a
+          href="/tasks?status=todo"
+          className={`px-6 py-2.5 rounded-2xl text-sm font-medium transition-all ${
+            currentFilter === 'todo' ? 'bg-blue-600 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400'
+          }`}
+        >
+          To Do
+        </a>
+        <a
+          href="/tasks?status=done"
+          className={`px-6 py-2.5 rounded-2xl text-sm font-medium transition-all ${
+            currentFilter === 'done' ? 'bg-blue-600 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400'
+          }`}
+        >
+          Done
+        </a>
+      </div>
 
-        {completedTasks.length > 0 && (
-          <div>
-            <h3 className="text-xl mb-6 text-emerald-400">Completed ({completedTasks.length})</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {completedTasks.map(task => (
-                <TaskCard 
-                  key={task.id}
-                  task={task}
-                  onToggleComplete={toggleComplete}
-                  onDelete={deleteTask}
-                />
-              ))}
-            </div>
-          </div>
+      <h3 className="text-2xl font-semibold mb-8">
+        {currentFilter === 'all' ? 'All Tasks' : currentFilter === 'todo' ? 'To Do' : 'Completed'} ({filteredTasks.length})
+      </h3>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredTasks.length > 0 ? (
+          filteredTasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onToggleComplete={toggleTask}
+              onDelete={deleteTask}
+            />
+          ))
+        ) : (
+          <p className="col-span-2 text-center text-zinc-500 py-20 text-lg">
+            No tasks found.
+          </p>
         )}
       </div>
     </div>
