@@ -13,7 +13,7 @@ export default function Home() {
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: 'center' }}
         >
-          <source src="/videos/background.mp4" type="video/mp4" />
+          <source src="/videos/background-v2.mp4" type="video/mp4" />
         </video>
 
         {/* Strong overlay for better readability */}
