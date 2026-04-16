@@ -31,14 +31,13 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {isSignedIn ? (
             // Logged in - Show UserButton (Clerk's built-in profile)
-            <UserButton 
-              afterSignOutUrl="/sign-in"
-              appearance={{
-                elements: {
-                  avatarBox: "w-10 h-10",
-                },
-              }}
-            />
+           <UserButton 
+  appearance={{
+    elements: {
+      avatarBox: "w-10 h-10",
+    },
+  }}
+/>
           ) : (
             // Not logged in - Show Sign In button
             <Link
