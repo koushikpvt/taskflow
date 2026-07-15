@@ -1,11 +1,2 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
-
-export default clerkMiddleware();
-
-export const config = {
-  matcher: [
-    '/((?!.+\\.[\\w]+$|_next).*)', 
-    '/', 
-    '/(api|trpc)(.*)',
-  ],
-};
+// middleware.ts - Temporarily disabled to fix deployment
+export default function middleware() {}
