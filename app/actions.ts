@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from './db';
-import { tasks } from './db/schema';
+import { tasks, feedback } from './db/schema';
 import { eq, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { currentUser } from '@clerk/nextjs/server';
@@ -63,7 +63,6 @@ export async function toggleTask(id: number) {
   const user = await currentUser();
   if (!user) throw new Error('Not authenticated');
 
-  // Fetch the task to get its current status
   const task = await db
     .select()
     .from(tasks)
@@ -103,4 +102,29 @@ export async function deleteTask(id: number) {
 
   revalidatePath('/tasks');
   revalidatePath('/dashboard');
+}
+
+export async function submitFeedback(formData: FormData) {
+  const user = await currentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const category = (formData.get('category') as string) || 'general';
+  const message = formData.get('message') as string;
+
+  if (!message?.trim()) {
+    throw new Error('Feedback message is required.');
+  }
+
+  const primaryEmail = user.emailAddresses[0]?.emailAddress || 'No email';
+  const fullName = user.firstName
+    ? `${user.firstName} ${user.lastName || ''}`.trim()
+    : user.username || 'User';
+
+  await db.insert(feedback).values({
+    userId: user.id,
+    userEmail: primaryEmail,
+    userName: fullName,
+    category,
+    message: message.trim(),
+  });
 }
